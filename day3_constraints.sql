@@ -15,9 +15,9 @@
  CREATE TABLE calisanlar
     (
         id CHAR(5) PRIMARY KEY, -- not null+ unique
-        isim VARCHAR(50) UNIQUE,
-        maas int NOT NULL,
-        ise_baslama DATE
+        isim VARCHAR(50) UNIQUE, -- tekrar eden benzer ogeler olmayacak
+        maas int NOT NULL, -- maasa herhangi bir değer atanmak zorunda
+        ise_baslama DATE -- 2022-01-01 formatında
     );
  
  
@@ -55,3 +55,53 @@ INSERT INTO calisanlar VALUES( '10002', 'Mehmet Yılmaz' ,12000, '2018-04-14');
     -- parent tabloda olmayan id ile child a ekleme yapamayız
     -- FK'ye null değeri atanabilir. 
     INSERT INTO adresler VALUES(NULL,'Ağa Sok', '30.Cad.','Antep');
+    
+    select * from adresler;
+    -- bağlantılı tablolarda child silinmeden parent silinmez
+    drop table calisanlar;
+    
+    
+    
+    /*============================== ON DELETE CASCADE =============================
+  Her defasında önce child tablodaki verileri silmek yerine ON DELETE CASCADE
+  silme özelliğini aktif hale getirebiliriz.
+  
+  Bunun için FK olan satırın en sonuna ON DELETE CASCADE komutunu yazmak yeterli
+  
+==============================================================================*/ 
+    
+    CREATE TABLE talebeler
+    (
+        id CHAR(3) primary key,  
+        isim VARCHAR(50),
+        veli_isim VARCHAR(50),
+        yazili_notu int
+    );
+    
+    INSERT INTO talebeler VALUES(123, 'Ali Can', 'Hasan',75);
+    INSERT INTO talebeler VALUES(124, 'Merve Gul', 'Ayse',85);
+    INSERT INTO talebeler VALUES(125, 'Kemal Yasa', 'Hasan',85);
+    INSERT INTO talebeler VALUES(126, 'Nesibe Yılmaz', 'Ayse',95);
+    INSERT INTO talebeler VALUES(127, 'Mustafa Bak', 'Can',99);
+     CREATE TABLE notlar 
+    ( 
+        talebe_id char(3), 
+        ders_adi varchar(30), 
+        yazili_notu int, 
+        CONSTRAINT notlar_fk FOREIGN KEY (talebe_id) 
+        REFERENCES talebeler(id) ON DELETE CASCADE); -- on delete cascade sayesinde
+       -- parent taki silinen bir kayıt ile ilişkili olan tüm child kayıtlarını
+       -- siler.  
+       -- mesela bir hastane silindi o hastanedeki bütün kayıtlar silinmeli, oda böyle olur.
+       -- cascade yoksa önce child temizlenir sonra parent
+    
+    INSERT INTO notlar VALUES ('123','kimya',75);
+    INSERT INTO notlar VALUES ('124', 'fizik',65);
+    INSERT INTO notlar VALUES ('125', 'tarih',90);
+    INSERT INTO notlar VALUES ('126', 'Matematik',90);
+    
+    select * from talebeler;
+    select * from notlar;
+    DELETE FROM talebeler 
+    WHERE id=124;
+    
