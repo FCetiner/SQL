@@ -105,3 +105,7 @@ INSERT INTO calisanlar VALUES( '10002', 'Mehmet Yılmaz' ,12000, '2018-04-14');
     DELETE FROM talebeler 
     WHERE id=124;
     
+    -- FK ile birleştirilen tablolardaki tüm verileri çekmek için 
+    -- JOIN İşlemi yapmak gerekir. Bu konuyu sonra göreceğiz.
+    SELECT * FROM talebeler, notlar WHERE talebeler.id = notlar.talebe_id;
+    
