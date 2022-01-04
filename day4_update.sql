@@ -92,16 +92,24 @@
   sutun değerleri ile toplayarak güncelleyiniz.
  -----------------------------------------------------------------------------*/  
    update urunler 
-   set urun_id=urun_id+vergi_no;
-    select * from urunler;
+   set urun_id=urun_id+ted_vergino;
+    
 /*-----------------------------------------------------------------------------
  ORNEK8: urunler tablosundan Ali Bak’in aldigi urunun ismini, tedarikci 
  tablosunda irtibat_ismi 'Adam Eve' olan firmanın ismi (firma_ismi) ile 
  degistiriniz.
  -----------------------------------------------------------------------------*/
+   delete from tedarikciler; -- tedarikcilerin insertini tekrar yapıyoruz
    
+   update urunler 
+   set urun_isim=(select firma_ismi from tedarikciler where irtibat_ismi='Adam Eve')
+   where musteri_isim='Ali Bak';
   
 /*------------------------------------------------------------------------------
  ORNEK9: Laptop satin alan musterilerin ismini, Apple’in irtibat_isim'i ile 
  degistirin
  -----------------------------------------------------------------------------*/
+ update urunler 
+ set musteri_isim=(select irtibat_ismi from tedarikciler where firma_ismi='Apple')
+ where urun_isim='Laptop';
+ select * from urunler;
