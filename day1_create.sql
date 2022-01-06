@@ -34,3 +34,5 @@ SELECT * FROM student; -- sadece isim için yıldız yerine name ya da yaş içi
                     TABLO SiLME  (CRUD - Drop )
 ===========================================================*/
 DROP TABLE urunler;
+
+

@@ -1,4 +1,3 @@
-
 /*=========================== EXISTS, NOT EXIST ================================
    EXISTS Condition subquery'ler ile kullanilir. IN ifadesinin kullanımına benzer olarak,
     EXISTS ve NOT EXISTS ifadeleri de alt sorgudan getirilen değerlerin içerisinde 
@@ -52,26 +51,27 @@
   MUSTERI_ISIM 'lerini listeleyen bir sorgu yazınız. 
  -----------------------------------------------------------------------------*/ 
 -- 1. yol
-select urun_id, musteri_isim from mart
- where  urun_id in (select urun_id from nisan where mart.urun_id=nisan.urun_id);
+select urun_id,musteri_isim  from mart
+where urun_id in (select urun_id from nisan where mart.urun_id=nisan.urun_id);
  
  -- 2. yol
- select urun_id, musteri_isim from mart
- where  exists (select urun_id from nisan where mart.urun_id=nisan.urun_id);
+select urun_id,musteri_isim from mart
+where  exists (select urun_id from nisan where mart.urun_id=nisan.urun_id);
 
 /* -----------------------------------------------------------------------------
   ORNEK2: Her iki ayda birden satılan ürünlerin URUN_ISIM'lerini ve bu ürünleri
   NİSAN ayında satın alan MUSTERI_ISIM'lerini listeleyen bir sorgu yazınız. 
  -----------------------------------------------------------------------------*/
- select urun_isim, musteri_isim from nisan as n  -- nisan ismini kısalttık sadece bu sorguda geçerli
- where exists(select urun_isim from mart m where m.urun_isim=n.urun_isim);
+   -- nisan ismini kısalttık sadece bu sorguda geçerli
+ select urun_isim, musteri_isim from nisan as n
+ where exists (select urun_isim from mart as m where n.urun_isim=m.urun_isim);
  
  /* -----------------------------------------------------------------------------
   ORNEK3: Her iki ayda birden ortak satılmayan ürünlerin URUN_ISIM'lerini ve bu ürünleri
-  NİSAN ayında satın alan MUSTERI_ISIM'lerini listeleyen bir sorgu yazınız. 
+  NİSAN ayında satın almayanan MUSTERI_ISIM'lerini listeleyen bir sorgu yazınız. 
  -----------------------------------------------------------------------------*/
- select urun_isim, musteri_isim from nisan as n 
- where not exists(select urun_isim from mart m where m.urun_isim=n.urun_isim);
+ select urun_isim, musteri_isim from nisan as n
+ where not exists ( select urun_isim from mart as m where m.urun_isim=n.urun_isim);
  
  /*===================== IS NULL, IS NOT NULL, COALESCE ========================
     
@@ -102,22 +102,22 @@ select urun_id, musteri_isim from mart
     
     select * from insanlar;
     -- ORNEK1 isim null olanları sorgula
-    select * from insanlar where isim is null;
+   select * from insanlar where isim is null;
     
     -- ORNEK2 isim null olmayanlar
-    select * from insanlar where isim is not null;
+   select * from insanlar where isim is not null;
     
     /* ----------------------------------------------------------------------------
   ORNEK3: isim 'i NULL olan kişilerin isim'ine NO NAME atayınız. kisa soruda eski yolla olur
 --------------------------------------------------------------------------*/
 update insanlar 
-set isim='NO NAME'
+set isim='henüz atanmadı'
 where isim is null;
 
 -- tabloyu eski haline donduruyoruz
 update insanlar
-set isim = null
-where isim = 'NO NAME';
+set isim=null
+where isim='henüz atanmadı';
 
 /* ----------------------------------------------------------------------------
   ORNEK4:   isim 'i NULL olanlara 'Henuz isim girilmedi'
@@ -127,9 +127,9 @@ where isim = 'NO NAME';
             gibi ifade yazmamak için. coalesce=birleşmek
 -----------------------------------------------------------------------------*/   
 update insanlar
-set isim=coalesce(isim, 'Henüz girilmedi'),
+ set isim=coalesce(isim,'Henuz isim girilmedi'),
 	adres=coalesce(adres,'Henuz adres girilmedi'),
-    ssn=coalesce(ssn, 'no ssn');
+	ssn=coalesce(ssn,'no ssn');
     select * from insanlar;
 
 /*================================ ORDER BY  ===================================
@@ -167,24 +167,26 @@ set isim=coalesce(isim, 'Henüz girilmedi'),
 /* ----------------------------------------------------------------------------
   ORNEK1: kisiler tablosunu adres'e göre sıralayarak sorgulayınız.
  -----------------------------------------------------------------------------*/ 
-    select * from kisiler order by adres; -- default olarak ascending sıraladı
+    select * from kisiler
+    order by adres; -- default olarak ascending sıraladı
    /* ----------------------------------------------------------------------------
-  ORNEK1: kisiler tablosunu maasa'e göre ters sıralayarak sorgulayınız.
+  ORNEK2: kisiler tablosunu maasa'e göre ters sıralayarak sorgulayınız.
  -----------------------------------------------------------------------------*/
-   select * from kisiler order by maas desc;
+   select * from kisiler
+   order by maas desc;
    
    /* ----------------------------------------------------------------------------
   ORNEK4: ismi Mine olanları, maas'e göre AZALAN sırada sorgulayınız.
 -----------------------------------------------------------------------------*/
-    select * from kisiler 
+    select * from kisiler
     where isim='Mine'
     order by maas desc;
 /* ----------------------------------------------------------------------------
   ORNEK5: soyismi 'i Bulut olanları maas sıralı olarak sorgulayınız.
 -----------------------------------------------------------------------------*/ 
-    select * from kisiler 
-    where soyisim='Bulut'
-    order by 5; -- 5. sutuna göre sıralaması gerektiğini belirtebiliyoruz
+  select * from kisiler
+  where soyisim='Bulut'
+  order by 5;-- 5. sutuna göre sıralaması gerektiğini belirtebiliyoruz
     
   -- **********************************LIMIT*****************************************
   -- listeden ilk 10 veriyi getir
@@ -210,10 +212,90 @@ limit 3;
   sorguyu yazınız.
 -----------------------------------------------------------------------------*/ 
 select * from kisiler
-order by maas
+order by maas desc
 limit 3,3;
 
 -- oracle çözümü
 --  OFFSET 3 ROWS           -- ilk 3 kaydı atladık
   --  FETCH NEXT 3 ROWS ONLY; -- sonraki 3 kisi
+  /*============================= GROUP BY =====================================
     
+    GROUP BY cümleciği bir SELECT ifadesinde satırları, sutunların değerlerine 
+    göre özet olarak gruplamak için kullanılır. 
+   
+    GROUP BY cümleceği her grup başına bir satır döndürür. 
+    
+    GROUP BY genelde, AVG(),COUNT(),MAX(),MIN() ve SUM() gibi aggregate 
+    fonksiyonları ile birlikte kullanılır.
+    
+==============================================================================*/ 
+      
+    CREATE TABLE manav 
+    (
+        isim varchar(50), 
+        urun_adi varchar(50), 
+        urun_miktari int 
+    );
+    
+    INSERT INTO manav VALUES( 'Ali', 'Elma', 5);
+    INSERT INTO manav VALUES( 'Ayse', 'Armut', 3);
+    INSERT INTO manav VALUES( 'Veli', 'Elma', 2);
+    INSERT INTO manav VALUES( 'Hasan', 'Uzum', 4);
+    INSERT INTO manav VALUES( 'Ali', 'Armut', 2);
+    INSERT INTO manav VALUES( 'Ayse', 'Elma', 3);
+    INSERT INTO manav VALUES( 'Veli', 'Uzum', 4);
+    INSERT INTO manav VALUES( 'Ali', 'Armut', 2);
+    INSERT INTO manav VALUES( 'Veli', 'Elma', 3);
+    INSERT INTO manav VALUES( 'Ayse', 'Uzum', 4);
+    INSERT INTO manav VALUES( 'Ali', null, 2);
+    
+    select * from manav;
+    
+    /* -----------------------------------------------------------------------------
+  ORNEK1: kisi ismine göre satılan toplam meyve miktarlarını gösteren sorguyu 
+  yazınız.
+------------------------------------------------------------------------------*/  
+select isim, sum(urun_miktari) as toplam_ürün from manav
+group by isim;
+    /* ----------------------------------------------------------------------------
+  ORNEK2: satılan meyve türüne (urun_adi) göre urun alan kişi sayısını gösteren
+  sorguyu yazınız. NULL olarak girilen meyveyi listelemesin.
+-----------------------------------------------------------------------------*/ 
+select urun_adi, count(isim) kisi_sayisi from manav-- group by ile birlikte where kelimesi kullanılabilir
+where urun_adi is not null
+group by urun_adi;
+/* ----------------------------------------------------------------------------
+  ORNEK3: satılan meyve türüne (urun_adi) göre satılan (urun_miktari )MIN ve 
+  MAX urun miktarlarini, MAX urun miktarina göre sıralayarak listeyen sorguyu 
+  yazınız.
+-----------------------------------------------------------------------------*/
+select urun_adi, min(urun_miktari)min,max(urun_miktari)max from manav
+where urun_adi is not null
+group by urun_adi
+order by max;
+/* ----------------------------------------------------------------------------
+  ORNEK4: kisi ismine ve urun adına göre satılan ürünlerin toplamını 
+  gruplandıran ve isime göre ters sırasıda listeyen sorguyu yazınız.
+ -----------------------------------------------------------------------------*/ 
+ select isim,urun_adi, sum(urun_miktari)toplam_miktar from manav
+ where urun_adi is not null
+ group by urun_adi,isim
+ order by isim desc;
+ 
+ 
+ create table customer (
+musteri_no int,
+ad VARCHAR(22),
+soyad VARCHAR(25),
+sehir varchar(45),
+cinsiyet varchar(15),
+puan int
+);
+INSERT INTO customer VALUES(111,'ebru', 'akar','denizli','kadin',78);
+INSERT INTO customer VALUES(222,'ayse', 'kara','ankara','kadin',90);
+INSERT INTO customer VALUES(333,'ali','gel','istanbul','erkek',66);
+INSERT INTO customer VALUES(444, 'mehmet','okur','mus','erkek',98);
+
+select concat('Adınız Soyadiniz : ', ad, ' ', soyad) ad_soyad from customer; 
+select concat(musteri_no, '. ', ad, ' ', soyad)ad_soyad, sehir, cinsiyet puan from customer;
+-- sutunları concat ettik
