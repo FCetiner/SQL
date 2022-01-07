@@ -1,3 +1,59 @@
+/* ----------------------------------------------------------------------------
+  ORNEK5: kisi ismine ve urun adına göre (gruplayarak) satılan ürünlerin toplamını bulan ve
+  ve bu toplam değeri 3 ve fazlası olan kayıtları toplam urun miktarlarina göre
+  ters siralayarak listeyen sorguyu yazınız.
+ -----------------------------------------------------------------------------*/  
+ select isim, urun_adi, sum(urun_miktari)
+ from manav
+ group by isim, urun_adi
+ having sum(urun_miktari)>=3
+ order by sum(urun_miktari) desc;
+ -- where sum komutu oldugu için uyari veriyor yerine having kullanıyoruz
+ -- aggregate fonksiyonları ile ilgili bir koşul koymak için (sum,max,avg,min..)
+ -- group by dan sonra having cumleciği kullanılır
+ 
+  /* ----------------------------------------------------------------------------
+  ORNEK6: satılan urun_adi'na göre (gruplayarak) MAX urun sayılarını sıralayarak listeleyen 
+  sorguyu yazınız. NOT: Sorgu, sadece MAKS urun_miktari MIN urun_miktarına 
+  eşit olmayan kayıtları listelemelidir.
+ -----------------------------------------------------------------------------*/    
+ select urun_adi, max(urun_miktari)max
+ from manav
+ group by urun_adi
+ having  not max=min(urun_miktari)
+ order by max;
+ 
+ 
+ /*============================= DISTINCT =====================================
+    
+    DISTINCT cümleciği bir SORGU ifadesinde benzer olan satırları filtrelemek
+    için kullanılır. Dolayısıyla seçilen sutun yada sutunlar için benzersiz veri
+    içeren satırlar oluşturmaya yarar.
+   
+    SYNTAX
+    -------
+    SELECT DISTINCT sutun_adi1, sutun_adi2, sutun_adi3
+    FROM  tablo_adı;
+==============================================================================*/
+
+/* ----------------------------------------------------------------------------
+  ORNEK1: satılan farklı meyve türlerinin sayısını listeleyen sorguyu yazınız.
+-----------------------------------------------------------------------------*/
+select urun_adi, count(distinct(urun_adi))
+from manav;
+
+/* -----------------------------------------------------------------------------
+  ORNEK2: satılan meyve + isimlerin farklı olanlarını listeyen sorguyu yazınız.
+------------------------------------------------------------------------------*/
+select distinct isim,urun_adi
+from manav;
+
+/* ----------------------------------------------------------------------------
+  ORNEK3: satılan meyvelerin urun_mikarlarinin benzersiz  olanlarının 
+  toplamlarini listeyen sorguyu yazınız.
+-----------------------------------------------------------------------------*/
+select  urun_adi, sum(distinct(urun_miktari))
+from manav;
 /*==================== SET OPERATORLERI: UNION, UNION ALL======================
     
     UNION, UNION ALL, (oracleSql->INTERSECT, ve MINUS) gibi SET operatorleri yardimiyla  
@@ -43,59 +99,65 @@ CREATE TABLE personel
   ORNEK1: Maasi 4000’den cok olan isci isimlerini + 5000 liradan fazla maas 
   alinan sehirleri gosteren sorguyu yaziniz
 ------------------------------------------------------------------------------*/
-select isim as isim_sehir, maas 
-from personel 
-where maas>4000 
-UNION
-select sehir, maas 
+select isim,maas
+from personel
+where maas>4000
+union
+select sehir,maas
 from personel
 where maas>5000
-order by isim_sehir;
+order by maas desc;
 
 /* -----------------------------------------------------------------------------
   ORNEK2: Mehmet Ozturk ismindeki kisilerin aldigi maaslari ve Istanbul'daki 
   personelin maaslarini yüksekten alçaga dogru siralayarak bir tabloda gosteren 
   sorguyu yaziniz.    
 ------------------------------------------------------------------------------*/ 
-select maas, isim from personel
-where isim='Mehmet Ozturk'
-UNION				-- all distinct ozelliğini çıkarır
-select maas,sehir from personel
-where sehir='Istanbul'
-order by maas desc;
+select isim,maas
+from personel
+where isim='mehmet ozturk'
+union
+select isim, maas
+from personel
+where sehir='Istanbul';
 
 /* -----------------------------------------------------------------------------
   ORNEK3: Honda,Ford ve Tofas'ta calisan ortak isimde personel varsa listeleyin
 ------------------------------------------------------------------------------*/
-select isim,sirket from personel
+select isim, sirket
+from personel
 where sirket='Honda'
 union
-select isim,sirket from personel
-where sirket='Ford'
+select isim, sirket
+from personel
+where sirket='Frod'
 union
-select isim,sirket from personel
-where sirket='Tofaş';
+select isim, sirket
+from personel
+where sirket='Tofas';
 
 /* -----------------------------------------------------------------------------
   ORNEK4: 5000’den az maas alanlarin, arti Honda calisani olmayanlarin bilgilerini
   listeleyen bir sorgu yaziniz. 
 ------------------------------------------------------------------------------*/ 
-select isim,maas from personel
+select isim,maas
+from personel
 where maas<5000
 union
-select isim,maas from personel
-where sirket <>'Honda';
+select isim,maas
+from personel
+where sirket<>'honda';
 /* -----------------------------------------------------------------------------
   ORNEK5: Ismi Mehmet Ozturk olanlari + olarak Istanbul'da calismayanlarin isimlerini ve 
   sehirlerini listeleyen sorguyu yaziniz.
 ------------------------------------------------------------------------------*/
-select  isim,sehir
+select isim,sehir
 from personel
 where isim='Mehmet Ozturk'
 union
-select isim, sehir
+select isim ,sehir
 from personel
-where sehir !='Istanbul';
+where sehir<>'Istanbul';
 
 /*======================== FARKLI TABLOLARDAN BIRLESTIRME ====================*/   
     
@@ -120,30 +182,29 @@ where sehir !='Istanbul';
   maasini, personel_bilgi tablosundan da (id ilk 3 hanesiyle kaydolmuş=123)
   tel ve cocuk sayisini yazdirin  
 ------------------------------------------------------------------------------*/
-
-select sehir as sehir_tel, maas as maas_cocukSayisi
+select sehir, maas
 from personel
-where id=123456789
+where id='123456789'
 union
-select tel, cocuk_sayisi
+select tel,cocuk_sayisi
 from personel_bilgi
-where id=123; 
+where id='123';
+
 /* -----------------------------------------------------------------------------
   ORNEK7: Personel tablosundan Istanbul veya Ankara'da calisanlarin id'lerini
  ve 
  Personel_bilgi tablosundan 2 veya 3 cocugu olanlarin id lerini sorgulayiniz.
 
 ------------------------------------------------------------------------------*/
-select id from personel
-where sehir in ('Istanbul','Ankara')
-union all
-select id from personel_bilgi
+select id
+from personel
+where sehir in('Istanbul','Ankara')
+union
+select id 
+from personel_bilgi
 where cocuk_sayisi in(2,3);
 
-
 -- sirketlerden grupla sirketlerin çalışan isimlerini say
-select sirket, count(isim)
+select sirket, count(isim)personel_sayisi
 from personel
 group by sirket;
-
-

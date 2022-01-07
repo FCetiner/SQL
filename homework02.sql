@@ -40,10 +40,14 @@ select isim, (select cocuk_sayisi from aileler where calisanlar.id=aileler.id)co
 
 -- 5-) calisanlar' ın id, isim ve toplam_gelir'lerini gösteren bir sorgu yazınız.
 -- toplam_gelir = calisanlar.maas + aileler.ek_gelir
-select id, isim, ((maas)+ (select ek_gelir from aileler ))toplam_gelir 
-from calisanlar
-where id in (select id from aileler where calisanlar.id=aileler.id);
+select id, isim, (maas+(select ek_gelir from aileler where calisanlar.id=aileler.id ))toplam_gelir
+from calisanlar;
 
 -- 6-) Eğer bir ailenin kişi başı geliri 2000 TL den daha az ise o çalışanın
 -- maaşına ek %10 aile yardım zammı yapınız.
 -- kisi_basi_gelir = toplam_gelir / cocuk_sayisi + 2 (anne ve baba)
+update calisanlar
+set maas=maas*1.1
+where (maas+(select ek_gelir from aileler where calisanlar.id=aileler.id))/((select cocuk_sayisi from aileler where calisanlar.id=aileler.id)+2)<2000;
+
+select * from calisanlar;
