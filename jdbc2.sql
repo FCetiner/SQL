@@ -18,6 +18,8 @@ CREATE TABLE bolumler (
       maas          int,
       bolum_id      int
     );
+    select * from isciler;
+    
     
  
   

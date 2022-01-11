@@ -70,7 +70,14 @@ group by sinif;
 select sinif,cinsiyet, count(*) as 'sayi' from ogrenci
 group by cinsiyet,sinif;
 -------- Örnek 4: Her türden kaç tane kitap olduğunu listeleyiniz.
-select 
+select turno, count(idno)idno_sayisi from kitap
+group by turno;
 -------- Örnek 5: Her türdeki en fazla sayfa sayısı olan kitapları listeleyiniz.
+select turno, max(sayfasayisi) from kitap
+group by turno;
 -------- Örnek 6: Her türdeki en az sayfa sayısı olan kitapları listeleyiniz.
+select turno, min(sayfasayisi) from kitap
+group by turno;
 -------- Örnek 7***: Her türden kaç tane kitap olduğunu listeleyiniz.(Tür isimleri de olsun)
+select (select kitap_turu from islemler where islemler.turno=kitap.turno) kitap_turu, count(idno) kitap_sayisi
+from kitap group by turno;
